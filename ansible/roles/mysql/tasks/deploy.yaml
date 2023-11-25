@@ -10,3 +10,4 @@
   notify: restart_mysql
   with_items:
     - etc/mysql/mysql.conf.d/mysqld.cnf
+    - etc/systemd/system/mysql.service
