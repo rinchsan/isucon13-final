@@ -146,12 +146,8 @@ func getLivecommentsHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fillUserResponse livestreamOwner: "+err.Error())
 	}
 
-	query, args, err = sqlx.In("SELECT t.* FROM livestream_tags AS lt JOIN tags AS t ON tl.tag_id = t.id WHERE lt.livestream_id = ?", livestreamID)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to build query livestream_tags: "+err.Error())
-	}
 	var tags []Tag
-	if err := tx.SelectContext(ctx, &tags, query, args...); err != nil {
+	if err := tx.SelectContext(ctx, &tags, "SELECT t.* FROM livestream_tags AS lt JOIN tags AS t ON lt.tag_id = t.id WHERE lt.livestream_id = ?", livestreamID); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to select livestream_tags: "+err.Error())
 	}
 
