@@ -86,27 +86,40 @@ type PostIconResponse struct {
 	ID int64 `json:"id"`
 }
 
+func getIfNoneMatchFromHeader(c echo.Context) string {
+	vs := c.Request().Header["If-None-Match"]
+	if len(vs) == 0 {
+		return ""
+	}
+	return vs[0]
+}
+
 func getIconHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	username := c.Param("username")
 
-	tx, err := dbConn.BeginTxx(ctx, nil)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to begin transaction: "+err.Error())
-	}
-	defer tx.Rollback()
-
 	var user UserModel
-	if err := tx.GetContext(ctx, &user, "SELECT * FROM users WHERE name = ?", username); err != nil {
+	if err := dbConn.GetContext(ctx, &user, "SELECT * FROM users WHERE name = ?", username); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, "not found user that has the given username")
 		}
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user: "+err.Error())
 	}
 
+	ifNoneMatch := getIfNoneMatchFromHeader(c)
+	if len(ifNoneMatch) > 0 {
+		iconHash, err := getIconHashFromDB(ctx, user.ID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "failed to get icon hash: "+err.Error())
+		}
+		if iconHash == ifNoneMatch {
+			return c.NoContent(http.StatusNotModified)
+		}
+	}
+
 	var image []byte
-	if err := tx.GetContext(ctx, &image, "SELECT image FROM icons WHERE user_id = ?", user.ID); err != nil {
+	if err := dbConn.GetContext(ctx, &image, "SELECT image FROM icons WHERE user_id = ?", user.ID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return c.File(fallbackImage)
 		} else {
@@ -426,7 +439,7 @@ func fillUserResponse(ctx context.Context, tx *sqlx.Tx, userModel UserModel) (Us
 	return user, nil
 }
 
-func fillUsersResponse(ctx context.Context, tx *sqlx.Tx, userModels []UserModel) ([]User, error) {
+func fillUsersResponse(ctx context.Context, userModels []UserModel) ([]User, error) {
 	if len(userModels) == 0 {
 		return []User{}, nil
 	}
@@ -441,7 +454,7 @@ func fillUsersResponse(ctx context.Context, tx *sqlx.Tx, userModels []UserModel)
 	if err != nil {
 		return nil, err
 	}
-	if err := tx.SelectContext(ctx, &themeModels, query, args...); err != nil {
+	if err := dbConn.SelectContext(ctx, &themeModels, query, args...); err != nil {
 		return nil, err
 	}
 
@@ -453,7 +466,7 @@ func fillUsersResponse(ctx context.Context, tx *sqlx.Tx, userModels []UserModel)
 	users := make([]User, len(userModels))
 	for i := range userModels {
 		m := userModels[i]
-		iconHash, err := getIconHash(ctx, tx, m.ID)
+		iconHash, err := getIconHashFromDB(ctx, m.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -497,6 +510,30 @@ func getIconHash(ctx context.Context, tx *sqlx.Tx, userID int64) (string, error)
 
 	var image []byte
 	if err := tx.GetContext(ctx, &image, "SELECT image FROM icons WHERE user_id = ?", userID); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return "", err
+		}
+		image, err = os.ReadFile(fallbackImage)
+		if err != nil {
+			return "", err
+		}
+	}
+	iconHash := sha256.Sum256(image)
+	iconHashStr := fmt.Sprintf("%x", iconHash)
+
+	iconHashCache.Store(userID, iconHashStr)
+
+	return iconHashStr, nil
+}
+
+func getIconHashFromDB(ctx context.Context, userID int64) (string, error) {
+	v, ok := iconHashCache.Load(userID)
+	if ok {
+		return v.(string), nil
+	}
+
+	var image []byte
+	if err := dbConn.GetContext(ctx, &image, "SELECT image FROM icons WHERE user_id = ?", userID); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return "", err
 		}

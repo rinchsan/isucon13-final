@@ -75,7 +75,7 @@ func getReactionsHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "failed to get reactions")
 	}
 
-	reactions, err := fillReactionsResponse(ctx, tx, reactionModels, livestream)
+	reactions, err := fillReactionsResponse(ctx, reactionModels, livestream)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fill reactions response: "+err.Error())
 	}
@@ -175,7 +175,7 @@ func fillReactionResponse(ctx context.Context, tx *sqlx.Tx, reactionModel Reacti
 	return reaction, nil
 }
 
-func fillReactionsResponse(ctx context.Context, tx *sqlx.Tx, reactionModels []ReactionModel, livestream Livestream) ([]Reaction, error) {
+func fillReactionsResponse(ctx context.Context, reactionModels []ReactionModel, livestream Livestream) ([]Reaction, error) {
 	if len(reactionModels) == 0 {
 		return []Reaction{}, nil
 	}
@@ -190,11 +190,11 @@ func fillReactionsResponse(ctx context.Context, tx *sqlx.Tx, reactionModels []Re
 		return nil, err
 	}
 	var userModels []UserModel
-	if err := tx.SelectContext(ctx, &userModels, query, args...); err != nil {
+	if err := dbConn.SelectContext(ctx, &userModels, query, args...); err != nil {
 		return nil, err
 	}
 
-	users, err := fillUsersResponse(ctx, tx, userModels)
+	users, err := fillUsersResponse(ctx, userModels)
 	if err != nil {
 		return nil, err
 	}
