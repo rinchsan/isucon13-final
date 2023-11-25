@@ -1,0 +1,20 @@
+all:
+  children:
+    bench:
+      hosts:
+        bench01:
+          ansible_host: 52.69.210.189
+    nginx:
+      hosts:
+        nginx01:
+          ansible_host: 54.248.139.196
+    webapp:
+      hosts:
+        webapp01:
+          ansible_host: 54.248.139.196
+        webapp02:
+          ansible_host: 13.113.215.120
+    db:
+      hosts:
+        db01:
+          ansible_host: 43.207.252.83

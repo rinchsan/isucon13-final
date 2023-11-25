@@ -1,0 +1,6 @@
+- hosts: db
+  remote_user: ubuntu
+  tasks:
+    - import_role:
+        name: mysql
+        tasks_from: deploy

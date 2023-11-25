@@ -1,0 +1,6 @@
+- hosts: nginx
+  remote_user: ubuntu
+  tasks:
+    - import_role:
+        name: nginx
+        tasks_from: deploy
