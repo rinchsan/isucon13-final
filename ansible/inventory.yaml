@@ -12,7 +12,3 @@ all:
       hosts:
         db01:
           ansible_host: 52.195.245.5
-    dns:
-      hosts:
-        db01:
-          ansible_host: 52.195.245.5

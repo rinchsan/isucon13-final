@@ -1,10 +1,21 @@
 TRUNCATE TABLE themes;
 TRUNCATE TABLE icons;
 TRUNCATE TABLE reservation_slots;
-TRUNCATE TABLE ng_words;
 TRUNCATE TABLE tags;
 TRUNCATE TABLE livestreams;
 TRUNCATE TABLE users;
+
+-- NGワード
+DROP TABLE ng_words;
+CREATE TABLE `ng_words` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL,
+  `livestream_id` bigint NOT NULL,
+  `word` varchar(255) COLLATE utf8mb4_bin NOT NULL,
+  `created_at` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ng_words_word` (`word`)
+) ENGINE=InnoDB AUTO_INCREMENT=14358 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ライブ配信に対するライブコメント
 DROP TABLE IF EXISTS livecomments;
@@ -105,3 +116,4 @@ alter table `themes` add index idx_01(user_id);
 alter table `livestreams` add index idx_01(user_id);
 alter table `livestream_viewers_history` add index idx_01(livestream_id);
 alter table `livecomment_reports` add index idx_01(livestream_id);
+ALTER TABLE `ng_words` ADD INDEX `idx_ng_words_livestream_id_user_id_created_at`(`livestream_id`,`user_id`,`created_at` DESC);
