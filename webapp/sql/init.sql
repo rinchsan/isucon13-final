@@ -38,6 +38,12 @@ CREATE TABLE `livestream_tags` (
   `tag_id` BIGINT NOT NULL
 ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
+DROP TABLE IF EXISTS icons;
+CREATE TABLE `icons` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` BIGINT NOT NULL,
+  `image` LONGBLOB NOT NULL
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 ALTER TABLE `themes` auto_increment = 1;
 ALTER TABLE `icons` auto_increment = 1;
@@ -55,3 +61,4 @@ ALTER TABLE `users` auto_increment = 1;
 alter table `livestream_tags` add index idx_01(livestream_id);
 alter table `reactions` add index idx_01(livestream_id);
 alter table `livecomments` add index idx_01(livestream_id);
+alter table `icons` add index idx_01(user_id);
