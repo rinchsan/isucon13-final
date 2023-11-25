@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"sync"
 	"time"
 
@@ -87,12 +88,12 @@ type PostIconResponse struct {
 }
 
 func getIfNoneMatchFromHeader(c echo.Context) string {
-	c.Logger().Error("リクエストヘッダーです", c.Request().Header)
 	vs := c.Request().Header["If-None-Match"]
 	if len(vs) == 0 {
 		return ""
 	}
-	return vs[0]
+	r, _ := strconv.Unquote(vs[0])
+	return r
 }
 
 func getIconHandler(c echo.Context) error {
@@ -114,7 +115,6 @@ func getIconHandler(c echo.Context) error {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, "failed to get icon hash: "+err.Error())
 		}
-		c.Logger().Error(fmt.Sprintf("iconHash:%s, ifNoneMatch:%s", iconHash, ifNoneMatch))
 		if iconHash == ifNoneMatch {
 			return c.NoContent(http.StatusNotModified)
 		}
