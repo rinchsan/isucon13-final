@@ -87,6 +87,7 @@ type PostIconResponse struct {
 }
 
 func getIfNoneMatchFromHeader(c echo.Context) string {
+	c.Logger().Error("リクエストヘッダーです", c.Request().Header)
 	vs := c.Request().Header["If-None-Match"]
 	if len(vs) == 0 {
 		return ""
