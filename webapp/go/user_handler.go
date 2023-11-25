@@ -428,6 +428,13 @@ func fillUserResponse(ctx context.Context, tx *sqlx.Tx, userModel UserModel) (Us
 
 var iconHashCache sync.Map
 
+func deleteAllIconHashCache() {
+	iconHashCache.Range(func(key, value any) bool {
+		iconHashCache.Delete(key)
+		return true
+	})
+}
+
 func getIconHash(ctx context.Context, tx *sqlx.Tx, userID int64) (string, error) {
 	v, ok := iconHashCache.Load(userID)
 	if ok {

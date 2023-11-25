@@ -1,0 +1,12 @@
+- name: Deploy pdns
+  become: true
+  copy:
+    src: "{{ item }}"
+    dest: /home/isucon/webapp/pdns/
+  notify:
+    - apply-pdns
+    - restart-pdns
+  with_items:
+    - ../webapp/pdns/init_zone.sh
+    - ../webapp/pdns/named.conf
+    - ../webapp/pdns/u.isucon.dev.zone

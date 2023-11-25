@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -114,6 +113,8 @@ func initializeHandler(c echo.Context) error {
 		c.Logger().Warnf("init.sh failed with err=%s", string(out))
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to initialize: "+err.Error())
 	}
+
+	deleteAllIconHashCache()
 
 	go func() {
 		if _, err := http.Get("http://54.250.166.195:9000/api/group/collect"); err != nil {
