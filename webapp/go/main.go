@@ -13,12 +13,12 @@ import (
 	"strconv"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
+	"github.com/kaz/pprotein/integration/echov4"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-
-	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
 	echolog "github.com/labstack/gommon/log"
 )
 
@@ -127,6 +127,8 @@ func main() {
 	cookieStore.Options.Domain = "*.u.isucon.dev"
 	e.Use(session.Middleware(cookieStore))
 	// e.Use(middleware.Recover())
+
+	echov4.EnableDebugHandler(e)
 
 	// 初期化
 	e.POST("/api/initialize", initializeHandler)
