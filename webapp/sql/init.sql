@@ -19,6 +19,19 @@ CREATE TABLE `livecomments` (
   `created_at` BIGINT NOT NULL
 ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
+-- ライブ配信
+DROP TABLE IF EXISTS livestreams;
+CREATE TABLE `livestreams` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` BIGINT NOT NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `description` text NOT NULL,
+  `playlist_url` VARCHAR(255) NOT NULL,
+  `thumbnail_url` VARCHAR(255) NOT NULL,
+  `start_at` BIGINT NOT NULL,
+  `end_at` BIGINT NOT NULL
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+
 -- ライブ配信に対するリアクション
 DROP TABLE IF EXISTS reactions;
 CREATE TABLE `reactions` (
@@ -72,3 +85,4 @@ alter table `reactions` add index idx_01(livestream_id);
 alter table `livecomments` add index idx_01(livestream_id);
 alter table `icons` add index idx_01(user_id);
 alter table `themes` add index idx_01(user_id);
+alter table `livestreams` add index idx_01(user_id);
