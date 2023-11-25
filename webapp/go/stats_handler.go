@@ -266,7 +266,7 @@ func getLivestreamStatisticsHandler(c echo.Context) error {
 		Tips         int64 `db:"tips"`
 	}
 	var tipsCountPerLivestreamID []TipsCount
-	if err := tx.GetContext(ctx, &tipsCountPerLivestreamID, query, params...); err != nil {
+	if err := tx.SelectContext(ctx, &tipsCountPerLivestreamID, query, params...); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get: "+err.Error())
 	}
 
