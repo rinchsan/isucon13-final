@@ -156,7 +156,7 @@ func fillCommentsResponse(ctx context.Context, tx *sqlx.Tx, commentModels []Live
 		return nil, err
 	}
 
-	users, err := fillUsersResponse(ctx, tx, userModels)
+	users, err := fillUsersResponse(ctx, userModels)
 	if err != nil {
 		return nil, err
 	}
