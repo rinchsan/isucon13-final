@@ -102,11 +102,121 @@ func getLivecommentsHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get livecomments: "+err.Error())
 	}
 
+	getCommentUserIDs := func() []int64 {
+		userIDs := make([]int64, len(livecommentModels))
+		for i := range livecommentModels {
+			userIDs[i] = livecommentModels[i].UserID
+		}
+		return userIDs
+	}
+	commentUserIDs := getCommentUserIDs()
+
+	query, args, err := sqlx.In("SELECT * FROM users WHERE id IN (?)", commentUserIDs)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to build query UserModel: "+err.Error())
+	}
+	var commentUsers []UserModel
+	if err := tx.SelectContext(ctx, &commentUsers, query, args...); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to select commentUsers: "+err.Error())
+	}
+
+	query, args, err = sqlx.In("SELECT * FROM themes WHERE user_id IN (?)", commentUserIDs)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to build query ThemeModel: "+err.Error())
+	}
+	var themeModels []ThemeModel
+	if err := tx.SelectContext(ctx, &themeModels, query, args...); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to select themeModels: "+err.Error())
+	}
+
+	livestreamModel := LivestreamModel{}
+	if err := tx.GetContext(ctx, &livestreamModel, "SELECT * FROM livestreams WHERE id = ?", livestreamID); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get livestreamModel: "+err.Error())
+	}
+
+	livestreamOwnerModel := UserModel{}
+	if err := tx.GetContext(ctx, &livestreamOwnerModel, "SELECT * FROM users WHERE id = ?", livestreamModel.UserID); err != nil {
+		// NOTE: これだと通らないかも
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get livestreamOwnerModel: "+err.Error())
+	}
+
+	livestreamOwner, err := fillUserResponse(ctx, tx, livestreamOwnerModel)
+	if err != nil {
+		// NOTE: これだと通らないかも
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fillUserResponse livestreamOwner: "+err.Error())
+	}
+
+	query, args, err = sqlx.In("SELECT t.* FROM livestream_tags AS lt JOIN tags AS t ON tl.tag_id = t.id WHERE lt.livestream_id = ?", livestreamID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to build query livestream_tags: "+err.Error())
+	}
+	var tags []Tag
+	if err := tx.SelectContext(ctx, &tags, query, args...); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to select livestream_tags: "+err.Error())
+	}
+
+	getCommentUser := func(userID int64) (*UserModel, error) {
+		for _, commentUser := range commentUsers {
+			if commentUser.ID == userID {
+				return &commentUser, nil
+			}
+		}
+		return nil, errors.New("comment user not found")
+	}
+	getThemeByUserID := func(userID int64) (*ThemeModel, error) {
+		for _, themeModel := range themeModels {
+			if themeModel.UserID == userID {
+				return &themeModel, nil
+			}
+		}
+		return nil, errors.New("theme not found")
+	}
+
 	livecomments := make([]Livecomment, len(livecommentModels))
 	for i := range livecommentModels {
-		livecomment, err := fillLivecommentResponse(ctx, tx, livecommentModels[i])
+		commentUserModel, err := getCommentUser(livecommentModels[i].UserID)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "failed to fil livecomments: "+err.Error())
+			return echo.NewHTTPError(http.StatusInternalServerError, "failed to getCommentUser: "+err.Error())
+		}
+		commentThemeModel, err := getThemeByUserID(livecommentModels[i].UserID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "failed to getThemeByUserID: "+err.Error())
+		}
+		iconHash, err := getIconHash(ctx, tx, commentUserModel.ID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "failed to getIconHash: "+err.Error())
+		}
+		commentUser := User{
+			ID:          commentUserModel.ID,
+			Name:        commentUserModel.Name,
+			DisplayName: commentUserModel.DisplayName,
+			Description: commentUserModel.Description,
+			Theme: Theme{
+				ID:       commentThemeModel.ID,
+				DarkMode: commentThemeModel.DarkMode,
+			},
+			IconHash: iconHash,
+		}
+
+		livestream := Livestream{
+			ID:           livestreamModel.ID,
+			Owner:        livestreamOwner,
+			Title:        livestreamModel.Title,
+			Tags:         tags,
+			Description:  livestreamModel.Description,
+			PlaylistUrl:  livestreamModel.PlaylistUrl,
+			ThumbnailUrl: livestreamModel.ThumbnailUrl,
+			StartAt:      livestreamModel.StartAt,
+			EndAt:        livestreamModel.EndAt,
+		}
+
+		livecomment := Livecomment{
+			ID:         livecommentModels[i].ID,
+			User:       commentUser,
+			Livestream: livestream,
+			Comment:    livecommentModels[i].Comment,
+			Tip:        livecommentModels[i].Tip,
+			CreatedAt:  livecommentModels[i].CreatedAt,
 		}
 
 		livecomments[i] = livecomment
