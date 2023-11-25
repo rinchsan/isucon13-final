@@ -1,0 +1,11 @@
+- name: Apply pdns
+  shell: bash /home/isucon/webapp/pdns/init_zone.sh
+  listen: apply-pdns
+
+- name: Restart powerdns
+  become: true
+  systemd:
+    name: pdns
+    state: restarted
+    daemon_reload: true
+  listen: restart-pdns
