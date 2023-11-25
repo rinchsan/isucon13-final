@@ -233,14 +233,14 @@ func getLivestreamStatisticsHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get livestreams: "+err.Error())
 	}
 
-	getLiveStreamIDs := func(livestreams []*LivestreamModel) []int64 {
+	getLiveStreamIDs := func() []int64 {
 		ids := make([]int64, len(livestreams))
 		for i, livestream := range livestreams {
 			ids[i] = livestream.ID
 		}
 		return ids
 	}
-	liveStreamIDs := getLiveStreamIDs
+	liveStreamIDs := getLiveStreamIDs()
 
 	// SELECT livestream_id, count(*) as cnt FROM reactions WHERE livestream_id IN (5849) GROUP BY livestream_id;
 	query, params, err := sqlx.In("SELECT livestream_id, count(*) as cnt FROM reactions WHERE livestream_id IN (?) GROUP BY livestream_id", liveStreamIDs)
