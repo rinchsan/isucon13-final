@@ -1,5 +1,5 @@
 - hosts: nginx
-  remote_user: ubuntu
+  remote_user: isucon
   tasks:
     - import_role:
         name: nginx

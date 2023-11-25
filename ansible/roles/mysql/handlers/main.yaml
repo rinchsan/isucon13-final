@@ -1,7 +1,7 @@
 - name: Restart MySQL
   become: true
   systemd:
-    name: mariadb
+    name: mysql
     state: restarted
     daemon_reload: true
   listen: restart_mysql

@@ -9,4 +9,4 @@
     backup: true
   notify: restart_mysql
   with_items:
-    - etc/mysql/mariadb.conf.d/50-server.cnf
+    - etc/mysql/mysql.conf.d/mysql.cnf

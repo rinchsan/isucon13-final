@@ -9,7 +9,7 @@
   notify: restart_nginx
   with_items:
     - etc/nginx/nginx.conf
-    - etc/nginx/sites-enabled/isucondition.conf
+    - etc/nginx/sites-available/default
 - name: Change access.log permission
   become: true
   file:
