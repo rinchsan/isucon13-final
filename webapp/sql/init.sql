@@ -1,8 +1,6 @@
 TRUNCATE TABLE themes;
 TRUNCATE TABLE icons;
 TRUNCATE TABLE reservation_slots;
-TRUNCATE TABLE livestream_viewers_history;
-TRUNCATE TABLE livecomment_reports;
 TRUNCATE TABLE ng_words;
 TRUNCATE TABLE tags;
 TRUNCATE TABLE livestreams;
@@ -67,6 +65,25 @@ CREATE TABLE `themes` (
   `dark_mode` BOOLEAN NOT NULL
 ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
+-- ライブ配信視聴履歴
+DROP TABLE IF EXISTS livestream_viewers_history;
+CREATE TABLE `livestream_viewers_history` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` BIGINT NOT NULL,
+  `livestream_id` BIGINT NOT NULL,
+  `created_at` BIGINT NOT NULL
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+
+-- ユーザからのライブコメントのスパム報告
+TRUNCATE TABLE livecomment_reports;
+CREATE TABLE `livecomment_reports` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` BIGINT NOT NULL,
+  `livestream_id` BIGINT NOT NULL,
+  `livecomment_id` BIGINT NOT NULL,
+  `created_at` BIGINT NOT NULL
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+
 ALTER TABLE `themes` auto_increment = 1;
 ALTER TABLE `icons` auto_increment = 1;
 ALTER TABLE `reservation_slots` auto_increment = 1;
@@ -86,3 +103,5 @@ alter table `livecomments` add index idx_01(livestream_id);
 alter table `icons` add index idx_01(user_id);
 alter table `themes` add index idx_01(user_id);
 alter table `livestreams` add index idx_01(user_id);
+alter table `livestream_viewers_history` add index idx_01(livestream_id);
+alter table `livecomment_reports` add index idx_01(livestream_id);
