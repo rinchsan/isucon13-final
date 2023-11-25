@@ -12,3 +12,25 @@
   with_items:
     - ../webapp/sql/init.sh
     - ../webapp/sql/init.sql
+
+- name: Deploy sql files
+  become: true
+  copy:
+    src: "{{ item }}"
+    dest: /home/isucon/webapp/sql/initdb.d/
+  with_items:
+    - ../webapp/sql/initdb.d/00_create_database.sql
+    - ../webapp/sql/initdb.d/10_schema.sql
+
+- name: Deploy pdns
+  become: true
+  copy:
+    src: "{{ item }}"
+    dest: /home/isucon/webapp/pdns/
+  notify:
+    - apply-pdns
+    - restart-pdns
+  with_items:
+    - ../webapp/pdns/init_zone.sh
+    - ../webapp/pdns/named.conf
+    - ../webapp/pdns/u.isucon.dev.zone
