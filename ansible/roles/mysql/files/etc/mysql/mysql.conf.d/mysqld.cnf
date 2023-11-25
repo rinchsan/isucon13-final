@@ -28,8 +28,8 @@ user		= mysql
 #
 # Instead of skip-networking the default is now to listen only on
 # localhost which is more compatible and is not less secure.
-bind-address		= 127.0.0.1
-mysqlx-bind-address	= 127.0.0.1
+#bind-address		= 127.0.0.1
+#mysqlx-bind-address	= 127.0.0.1
 #
 # * Fine Tuning
 #
@@ -62,9 +62,9 @@ myisam-recover-options  = BACKUP
 log_error = /var/log/mysql/error.log
 #
 # Here you can see queries with especially long duration
-# slow_query_log		= 1
-# slow_query_log_file	= /var/log/mysql/mysql-slow.log
-# long_query_time = 2
+slow_query_log		= 1
+slow_query_log_file	= /var/log/mysql/mysql-slow.log
+long_query_time = 0
 # log-queries-not-using-indexes
 #
 # The following can be used as easy to replay backup logs or for replication.
@@ -76,3 +76,19 @@ log_error = /var/log/mysql/error.log
 max_binlog_size   = 100M
 # binlog_do_db		= include_database_name
 # binlog_ignore_db	= include_database_name
+
+innodb_buffer_pool_size = 2G
+#innodb_buffer_pool_instances = 2
+innodb_buffer_pool_dump_pct = 100
+innodb_buffer_pool_load_at_startup = ON
+innodb_buffer_pool_dump_at_shutdown = ON
+
+#innodb_redo_log_capacity = 256M # from 8.0.30
+innodb_log_file_size = 128M
+innodb_log_files_in_group = 2
+innodb_log_buffer_size = 160M
+innodb_flush_log_at_timeout = 10 # seconds
+innodb_flush_log_at_trx_commit = 2
+
+innodb_flush_method = O_DIRECT_NO_FSYNC # >= 8.0.14, O_DIRECT < 8.0.14
+#innodb_use_native_aio = OFF
