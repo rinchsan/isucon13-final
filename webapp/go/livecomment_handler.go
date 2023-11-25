@@ -102,14 +102,32 @@ func getLivecommentsHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get livecomments: "+err.Error())
 	}
 
-	livecomments := make([]Livecomment, len(livecommentModels))
-	for i := range livecommentModels {
-		livecomment, err := fillLivecommentResponse(ctx, tx, livecommentModels[i])
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "failed to fil livecomments: "+err.Error())
-		}
+	// livecomments := make([]Livecomment, len(livecommentModels))
+	// for i := range livecommentModels {
+	// 	livecomment, err := fillLivecommentResponse(ctx, tx, livecommentModels[i])
+	// 	if err != nil {
+	// 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fil livecomments: "+err.Error())
+	// 	}
 
-		livecomments[i] = livecomment
+	// 	livecomments[i] = livecomment
+	// }
+
+	var livestreamModel LivestreamModel
+	if err := tx.GetContext(ctx, &livestreamModel, "SELECT * FROM livestreams WHERE id = ?", livestreamID); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get livestream: "+err.Error())
+	}
+	livestream, err := fillLivestreamResponse(ctx, tx, livestreamModel)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fill livestream response: "+err.Error())
+	}
+
+	livecomments, err := fillCommentsResponse(ctx, tx, livecommentModels, livestream)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fill livestream response: "+err.Error())
+	}
+	var tags []Tag
+	if err := tx.SelectContext(ctx, &tags, "SELECT t.* FROM livestream_tags AS lt JOIN tags AS t ON lt.tag_id = t.id WHERE lt.livestream_id = ?", livestreamID); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to select livestream_tags: "+err.Error())
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -117,6 +135,52 @@ func getLivecommentsHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, livecomments)
+}
+
+func fillCommentsResponse(ctx context.Context, tx *sqlx.Tx, commentModels []LivecommentModel, livestream Livestream) ([]Livecomment, error) {
+	if len(commentModels) == 0 {
+		return []Livecomment{}, nil
+	}
+
+	userIDs := make([]int64, len(commentModels))
+	for i := range commentModels {
+		userIDs[i] = commentModels[i].UserID
+	}
+
+	query, args, err := sqlx.In("SELECT * FROM users WHERE id IN (?)", userIDs)
+	if err != nil {
+		return nil, err
+	}
+	var userModels []UserModel
+	if err := tx.SelectContext(ctx, &userModels, query, args...); err != nil {
+		return nil, err
+	}
+
+	users, err := fillUsersResponse(ctx, tx, userModels)
+	if err != nil {
+		return nil, err
+	}
+	userIDUsers := make(map[int64]User, len(users))
+	for _, v := range users {
+		userIDUsers[v.ID] = v
+	}
+
+	comments := make([]Livecomment, len(commentModels))
+	for i := range commentModels {
+
+		livecomment := Livecomment{
+			ID:         commentModels[i].ID,
+			User:       userIDUsers[commentModels[i].UserID],
+			Livestream: livestream,
+			Comment:    commentModels[i].Comment,
+			Tip:        commentModels[i].Tip,
+			CreatedAt:  commentModels[i].CreatedAt,
+		}
+
+		comments[i] = livecomment
+	}
+
+	return comments, nil
 }
 
 func getNgwords(c echo.Context) error {
