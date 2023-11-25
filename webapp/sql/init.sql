@@ -99,7 +99,7 @@ ALTER TABLE `users` auto_increment = 1;
 
 alter table `livestream_tags` add index idx_01(livestream_id);
 alter table `reactions` add index idx_01(livestream_id);
-alter table `livecomments` add index idx_01(livestream_id);
+alter table `livecomments` add index idx_01(livestream_id, created_at DESC);
 alter table `icons` add index idx_01(user_id);
 alter table `themes` add index idx_01(user_id);
 alter table `livestreams` add index idx_01(user_id);
