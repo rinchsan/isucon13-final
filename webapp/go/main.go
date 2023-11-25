@@ -18,7 +18,6 @@ import (
 	"github.com/kaz/pprotein/integration/echov4"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	echolog "github.com/labstack/gommon/log"
 )
 
@@ -121,8 +120,8 @@ func initializeHandler(c echo.Context) error {
 func main() {
 	e := echo.New()
 	e.Debug = true
-	e.Logger.SetLevel(echolog.DEBUG)
-	e.Use(middleware.Logger())
+	e.Logger.SetLevel(echolog.ERROR)
+	// e.Use(middleware.Logger())
 	cookieStore := sessions.NewCookieStore(secret)
 	cookieStore.Options.Domain = "*.u.isucon.dev"
 	e.Use(session.Middleware(cookieStore))
