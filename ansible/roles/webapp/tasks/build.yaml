@@ -1,4 +1,4 @@
 - name: Build webapp
   shell:
     chdir: ../webapp/go/
-    cmd: GOOS=linux GOARCH=amd64 go build -o isucondition .
+    cmd: GOOS=linux GOARCH=amd64 go build -o isupipe .
