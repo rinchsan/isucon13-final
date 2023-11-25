@@ -12,6 +12,8 @@ import (
 	"os/exec"
 	"strconv"
 
+	"time"
+
 	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
@@ -19,7 +21,6 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	echolog "github.com/labstack/gommon/log"
-	"time"
 )
 
 const (
@@ -98,8 +99,8 @@ func connectDB(logger echo.Logger) (*sqlx.DB, error) {
 		return nil, err
 	}
 	db.SetMaxIdleConns(1024)
-	db.SetConnMaxIdleTime(60 * time.Second)
-	db.SetConnMaxLifetime(60 * time.Second)
+	db.SetConnMaxIdleTime(70 * time.Second)
+	db.SetConnMaxLifetime(70 * time.Second)
 
 	if err := db.Ping(); err != nil {
 		return nil, err
