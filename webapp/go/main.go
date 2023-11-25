@@ -93,17 +93,18 @@ func connectDB(logger echo.Logger) (*sqlx.DB, error) {
 		conf.ParseTime = parseTime
 	}
 
-	db, err := sqlx.Open("mysql", conf.FormatDSN())
-	if err != nil {
-		return nil, err
+	var db *sqlx.DB
+	for {
+		db2, err := sqlx.Open("mysql", conf.FormatDSN())
+		if err == nil && db2.Ping() == nil {
+			db = db2
+			break
+		}
+		time.Sleep(1 * time.Second)
 	}
 	db.SetMaxIdleConns(1024)
 	db.SetConnMaxIdleTime(70 * time.Second)
 	db.SetConnMaxLifetime(70 * time.Second)
-
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
 
 	return db, nil
 }
