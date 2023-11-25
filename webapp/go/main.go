@@ -19,6 +19,7 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	echolog "github.com/labstack/gommon/log"
+	"time"
 )
 
 const (
@@ -96,7 +97,9 @@ func connectDB(logger echo.Logger) (*sqlx.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(1024)
+	db.SetConnMaxIdleTime(70 * time.Second)
+	db.SetConnMaxLifetime(70 * time.Second)
 
 	if err := db.Ping(); err != nil {
 		return nil, err
