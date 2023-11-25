@@ -1,14 +1,22 @@
 - name: Deploy webapp
   become: true
   copy:
-    src: ../webapp/go/isucondition
+    src: ../webapp/go/isupipe
     dest: /home/isucon/webapp/go/
   notify: restart_webapp
-- name: Deploy sql files
+- name: Deploy init files
   become: true
   copy:
     src: "{{ item }}"
     dest: /home/isucon/webapp/sql/
   with_items:
     - ../webapp/sql/init.sh
-    - ../webapp/sql/0_Schema.sql
+    - ../webapp/sql/init.sql
+- name: Deploy sql files
+  become: true
+  copy:
+    src: "{{ item }}"
+    dest: /home/isucon/webapp/sql/initdb.d/
+  with_items:
+    - ../webapp/sql/initdb.d/00_create_database.sql
+    - ../webapp/sql/initdb.d/10_schema.sql
