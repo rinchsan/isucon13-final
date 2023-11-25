@@ -8,6 +8,8 @@ all:
       hosts:
         webapp01:
           ansible_host: 52.195.245.5
+        webapp02:
+          ansible_host: 176.32.84.151
     db:
       hosts:
         db01:
