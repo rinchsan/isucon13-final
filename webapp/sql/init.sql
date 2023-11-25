@@ -6,7 +6,15 @@ TRUNCATE TABLE livecomment_reports;
 TRUNCATE TABLE ng_words;
 TRUNCATE TABLE reactions;
 TRUNCATE TABLE tags;
-TRUNCATE TABLE livestream_tags;
+
+-- ライブ配信とタグの中間テーブル
+DROP TABLE IF EXISTS livestream_tags;
+CREATE TABLE `livestream_tags` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `livestream_id` BIGINT NOT NULL,
+  `tag_id` BIGINT NOT NULL
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+
 TRUNCATE TABLE livecomments;
 TRUNCATE TABLE livestreams;
 TRUNCATE TABLE users;
@@ -23,4 +31,4 @@ ALTER TABLE `tags` auto_increment = 1;
 ALTER TABLE `livecomments` auto_increment = 1;
 ALTER TABLE `livestreams` auto_increment = 1;
 ALTER TABLE `users` auto_increment = 1;
--- alter table livestream_tags add index idx_01(livestream_id);
+alter table `livestream_tags` add index idx_01(livestream_id);
