@@ -12,11 +12,3 @@
   with_items:
     - ../webapp/sql/init.sh
     - ../webapp/sql/init.sql
-- name: Deploy sql files
-  become: true
-  copy:
-    src: "{{ item }}"
-    dest: /home/isucon/webapp/sql/initdb.d/
-  with_items:
-    - ../webapp/sql/initdb.d/00_create_database.sql
-    - ../webapp/sql/initdb.d/10_schema.sql
