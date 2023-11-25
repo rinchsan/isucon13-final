@@ -47,12 +47,12 @@ type InitializeResponse struct {
 func connectDB(logger echo.Logger) (*sqlx.DB, error) {
 	const (
 		networkTypeEnvKey = "ISUCON13_MYSQL_DIALCONFIG_NET"
-		addrEnvKey        = "ISUCON13_MYSQL_DIALCONFIG_ADDRESS"
-		portEnvKey        = "ISUCON13_MYSQL_DIALCONFIG_PORT"
-		userEnvKey        = "ISUCON13_MYSQL_DIALCONFIG_USER"
-		passwordEnvKey    = "ISUCON13_MYSQL_DIALCONFIG_PASSWORD"
-		dbNameEnvKey      = "ISUCON13_MYSQL_DIALCONFIG_DATABASE"
-		parseTimeEnvKey   = "ISUCON13_MYSQL_DIALCONFIG_PARSETIME"
+		// addrEnvKey        = "ISUCON13_MYSQL_DIALCONFIG_ADDRESS"
+		portEnvKey      = "ISUCON13_MYSQL_DIALCONFIG_PORT"
+		userEnvKey      = "ISUCON13_MYSQL_DIALCONFIG_USER"
+		passwordEnvKey  = "ISUCON13_MYSQL_DIALCONFIG_PASSWORD"
+		dbNameEnvKey    = "ISUCON13_MYSQL_DIALCONFIG_DATABASE"
+		parseTimeEnvKey = "ISUCON13_MYSQL_DIALCONFIG_PARSETIME"
 	)
 
 	conf := mysql.NewConfig()
@@ -60,7 +60,8 @@ func connectDB(logger echo.Logger) (*sqlx.DB, error) {
 	// 環境変数がセットされていなかった場合でも一旦動かせるように、デフォルト値を入れておく
 	// この挙動を変更して、エラーを出すようにしてもいいかもしれない
 	conf.Net = "tcp"
-	conf.Addr = net.JoinHostPort("127.0.0.1", "3306")
+	// NOTE: インスタンス2のIPに設定
+	conf.Addr = net.JoinHostPort("192.168.0.12", "3306")
 	conf.User = "isucon"
 	conf.Passwd = "isucon"
 	conf.DBName = "isupipe"
@@ -69,13 +70,13 @@ func connectDB(logger echo.Logger) (*sqlx.DB, error) {
 	if v, ok := os.LookupEnv(networkTypeEnvKey); ok {
 		conf.Net = v
 	}
-	if addr, ok := os.LookupEnv(addrEnvKey); ok {
-		if port, ok2 := os.LookupEnv(portEnvKey); ok2 {
-			conf.Addr = net.JoinHostPort(addr, port)
-		} else {
-			conf.Addr = net.JoinHostPort(addr, "3306")
-		}
-	}
+	// if addr, ok := os.LookupEnv(addrEnvKey); ok {
+	// 	if port, ok2 := os.LookupEnv(portEnvKey); ok2 {
+	// 		conf.Addr = net.JoinHostPort(addr, port)
+	// 	} else {
+	// 		conf.Addr = net.JoinHostPort(addr, "3306")
+	// 	}
+	// }
 	if v, ok := os.LookupEnv(userEnvKey); ok {
 		conf.User = v
 	}
