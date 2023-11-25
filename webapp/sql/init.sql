@@ -75,7 +75,7 @@ CREATE TABLE `livestream_viewers_history` (
 ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- ユーザからのライブコメントのスパム報告
-TRUNCATE TABLE livecomment_reports;
+DROP TABLE IF EXISTS livecomment_reports;
 CREATE TABLE `livecomment_reports` (
   `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `user_id` BIGINT NOT NULL,
