@@ -1,7 +1,7 @@
 - hosts: localhost
   tasks:
     - import_role:
-        name: webapp
+        name: dns
         tasks_from: build
 - hosts: webapp
   remote_user: isucon
